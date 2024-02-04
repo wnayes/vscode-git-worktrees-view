@@ -14,8 +14,10 @@
     "type": "git",
     "url": "https://github.com/wnayes/vscode-git-worktrees-view.git"
   },
+  "dependencies": {
+    "minimatch": "^9.0.3"
+  },
   "devDependencies": {
-    "@types/glob": "^7.2.0",
     "@types/node": "^16.0.0",
     "@types/vscode": "^1.80.0",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
@@ -125,6 +127,25 @@
           "when": "false"
         }
       ]
+    },
+    "configuration": {
+      "title": "Git Worktrees View",
+      "properties": {
+        "git-worktrees-view.ignoreBranches": {
+          "description": "Branch name patterns for worktrees to ignore when building the view.\nExample: `**/main` to hide the `main` branch.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "git-worktrees-view.ignorePaths": {
+          "description": "Path patterns for worktrees to ignore when building the view.\nExample: `**/foo` to hide worktrees that are in directories named `foo`.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

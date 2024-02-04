@@ -1,9 +1,11 @@
 import * as vscode from "vscode";
+import { minimatch } from "minimatch";
 import { WorktreeTreeItem } from "./WorktreeTreeItem";
 import { exec } from "./exec";
 import { parseWorktreePorcelain } from "./Worktrees";
 import { WorktreeCommands } from "./WorktreeCommands";
 import { getWorkspaceDirectory } from "./utils";
+import { ConfigSectionName, Settings } from "./Settings";
 
 export class WorktreeProvider
   implements vscode.TreeDataProvider<WorktreeTreeItem>
@@ -67,9 +69,28 @@ async function getWorktreeTreeItems(
     `git -C "${workingPath}" worktree list --porcelain -z`
   );
   const worktrees = parseWorktreePorcelain(worktreeOutput);
+
+  const { ignorePaths, ignoreBranches } = getIgnoreConfiguration();
+
   const treeItems = [];
   for (const worktree of worktrees) {
     if (worktree.bare) {
+      continue;
+    }
+    let skip = false;
+    for (const ignorePath of ignorePaths) {
+      if (worktree.path && minimatch(worktree.path, ignorePath)) {
+        skip = true;
+        break;
+      }
+    }
+    for (const ignoreBranch of ignoreBranches) {
+      if (worktree.branch && minimatch(worktree.branch, ignoreBranch)) {
+        skip = true;
+        break;
+      }
+    }
+    if (skip) {
       continue;
     }
 
@@ -91,4 +112,19 @@ async function getWorktreeTreeItems(
     if (a.label! > b.label!) return 1;
     return 0;
   });
+}
+
+function getIgnoreConfiguration() {
+  let ignorePaths = [];
+  let ignoreBranches = [];
+  const settings = vscode.workspace.getConfiguration(ConfigSectionName);
+  const ignorePathsRaw = settings.get(Settings.IgnorePaths);
+  if (Array.isArray(ignorePathsRaw)) {
+    ignorePaths = ignorePathsRaw;
+  }
+  const ignoreBranchesRaw = settings.get(Settings.IgnoreBranches);
+  if (Array.isArray(ignoreBranchesRaw)) {
+    ignoreBranches = ignoreBranchesRaw;
+  }
+  return { ignorePaths, ignoreBranches };
 }
