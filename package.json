@@ -132,17 +132,36 @@
       "title": "Git Worktrees View",
       "properties": {
         "git-worktrees-view.ignoreBranches": {
-          "description": "Branch name patterns for worktrees to ignore when building the view.\nExample: `**/main` to hide the `main` branch.",
+          "title": "Ignore By Branch",
+          "markdownDescription": "Branch name patterns for worktrees to ignore when building the view.\nExample: `**/main` to hide the `main` branch.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "git-worktrees-view.ignorePaths": {
-          "description": "Path patterns for worktrees to ignore when building the view.\nExample: `**/foo` to hide worktrees that are in directories named `foo`.",
+          "title": "Ignore By Path",
+          "markdownDescription": "Path patterns for worktrees to ignore when building the view.\nExample: `**/foo` to hide worktrees that are in directories named `foo`.",
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "git-worktrees-view.pathNodeParentMap": {
+          "description": "Places worktrees into sub-tree nodes based on path matching.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pathPattern": {
+                "type": "string",
+                "description": "Path pattern to match by."
+              },
+              "parent": {
+                "type": "string",
+                "description": "Name of the tree node to place the matching worktrees into."
+              }
+            }
           }
         }
       }
