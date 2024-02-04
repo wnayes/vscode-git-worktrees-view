@@ -1,0 +1,86 @@
+import * as vscode from "vscode";
+import { API as GitAPI, GitExtension } from "./git.d";
+import { WorktreeProvider } from "./WorktreeProvider";
+import { WorktreeCommands } from "./WorktreeCommands";
+
+export function activate(context: vscode.ExtensionContext) {
+  const worktreeProvider = new WorktreeProvider();
+  vscode.window.registerTreeDataProvider(
+    "git-worktrees-view",
+    worktreeProvider
+  );
+
+  subscribeToGitRepoChanges(worktreeProvider);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      WorktreeCommands.Open,
+      async (path: string) => {
+        const uri = vscode.Uri.file(path);
+        await vscode.commands.executeCommand("vscode.openFolder", uri);
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      WorktreeCommands.OpenNewWindow,
+      async (args: any) => {
+        const path = args.path ? args.path : undefined;
+        if (path) {
+          const uri = vscode.Uri.file(path);
+          await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+        }
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(WorktreeCommands.Refresh, () =>
+      worktreeProvider.refresh()
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(WorktreeCommands.Remove, (args) =>
+      worktreeProvider.removeWorktree(args, false)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(WorktreeCommands.RemoveForced, (args) =>
+      worktreeProvider.forceRemove(args)
+    )
+  );
+}
+
+export function deactivate() {}
+
+async function getBuiltInGitApi(): Promise<GitAPI | undefined> {
+  try {
+    const extension =
+      vscode.extensions.getExtension<GitExtension>("vscode.git");
+    if (extension !== undefined) {
+      const gitExtension = extension.isActive
+        ? extension.exports
+        : await extension.activate();
+
+      return gitExtension.getAPI(1);
+    }
+  } catch {}
+
+  return undefined;
+}
+
+const subscribeToGitRepoChanges = async (treeProvider: WorktreeProvider) => {
+  const builtinGit = await getBuiltInGitApi();
+  if (builtinGit) {
+    builtinGit.onDidChangeState(() => {
+      builtinGit.repositories.forEach((repo) => {
+        repo.state.onDidChange(() => {
+          treeProvider.refresh();
+        });
+      });
+    });
+  }
+};

@@ -1,0 +1,130 @@
+{
+  "name": "git-worktrees-view",
+  "displayName": "Git Worktrees View",
+  "description": "Switch between Git worktrees in Visual Studio Code",
+  "version": "1.0.0",
+  "publisher": "Will Nayes",
+  "license": "MIT",
+  "main": "./dist/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wnayes/vscode-git-worktrees-view.git"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/node": "^16.0.0",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.56.0",
+    "glob": "^8.0.3",
+    "typescript": "^5.3.2"
+  },
+  "extensionDependencies": [
+    "vscode.git"
+  ],
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "git-worktrees-view.openWorktree",
+        "title": "Open",
+        "group": "git-worktrees-view.open@1"
+      },
+      {
+        "command": "git-worktrees-view.openWorktreeNewWindow",
+        "title": "Open in new window",
+        "icon": "$(empty-window)",
+        "group": "git-worktrees-view.open@2"
+      },
+      {
+        "command": "git-worktrees-view.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "git-worktrees-view.removeWorktree",
+        "title": "Remove"
+      },
+      {
+        "command": "git-worktrees-view.removeWorktreeForce",
+        "title": "Remove (Forced)"
+      }
+    ],
+    "views": {
+      "scm": [
+        {
+          "id": "git-worktrees-view",
+          "name": "Worktrees",
+          "icon": "$(list-flat)",
+          "contextualTitle": "Source Control: Worktrees"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "git-worktrees-view.refresh",
+          "when": "view == git-worktrees-view",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "git-worktrees-view.openWorktreeNewWindow",
+          "group": "inline",
+          "when": "view == git-worktrees-view && viewItem == other-worktree"
+        },
+        {
+          "command": "git-worktrees-view.openWorktree",
+          "when": "view == git-worktrees-view && viewItem == other-worktree"
+        },
+        {
+          "command": "git-worktrees-view.openWorktreeNewWindow",
+          "when": "view == git-worktrees-view && viewItem == other-worktree"
+        },
+        {
+          "command": "git-worktrees-view.removeWorktree",
+          "when": "view == git-worktrees-view && viewItem == other-worktree"
+        },
+        {
+          "command": "git-worktrees-view.removeWorktreeForce",
+          "when": "view == git-worktrees-view && viewItem == other-worktree"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "git-worktrees-view.openWorktree",
+          "when": "false"
+        },
+        {
+          "command": "git-worktrees-view.openWorktreeNewWindow",
+          "when": "false"
+        },
+        {
+          "command": "git-worktrees-view.refresh",
+          "when": "false"
+        },
+        {
+          "command": "git-worktrees-view.removeWorktree",
+          "when": "false"
+        },
+        {
+          "command": "git-worktrees-view.removeWorktreeForce",
+          "when": "false"
+        }
+      ]
+    }
+  }
+}
