@@ -22,25 +22,25 @@ export class WorktreeProvider
     this._onDidChangeTreeData.fire();
   }
 
-  async forceRemove(args: { path: string }) {
+  async forceRemove(path: string) {
     vscode.window
       .showInformationMessage(
-        `Are you sure you want to force remove this worktree?\n\n${args.path}\n\nThis is IRREVERSIBLE.`,
+        `Are you sure you want to force remove this worktree?\n\n${path}\n\nThis is IRREVERSIBLE.`,
         "Yes",
         "No"
       )
       .then((answer) => {
         if (answer === "Yes") {
-          this.removeWorktree(args, true);
+          this.removeWorktree(path, true);
         }
       });
   }
 
-  async removeWorktree(args: { path: string }, force: boolean) {
+  async removeWorktree(path: string, force: boolean) {
     await exec(
       `git -C "${getWorkspaceDirectory()}" worktree remove${
         force ? " -f" : ""
-      } "${args.path}"`
+      } "${path}"`
     );
   }
 

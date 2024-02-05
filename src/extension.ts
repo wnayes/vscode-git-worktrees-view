@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { API as GitAPI, GitExtension } from "./git.d";
 import { WorktreeProvider } from "./WorktreeProvider";
 import { WorktreeCommands } from "./WorktreeCommands";
+import { WorktreeTreeItem } from "./WorktreeTreeItem";
 
 export function activate(context: vscode.ExtensionContext) {
   const worktreeProvider = new WorktreeProvider();
@@ -25,8 +26,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       WorktreeCommands.OpenNewWindow,
-      async (args: any) => {
-        const path = args.path ? args.path : undefined;
+      async (args: WorktreeTreeItem) => {
+        const path = args.worktree.path;
         if (path) {
           const uri = vscode.Uri.file(path);
           await vscode.commands.executeCommand("vscode.openFolder", uri, true);
@@ -42,14 +43,18 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(WorktreeCommands.Remove, (args) =>
-      worktreeProvider.removeWorktree(args, false)
+    vscode.commands.registerCommand(
+      WorktreeCommands.Remove,
+      (args: WorktreeTreeItem) =>
+        worktreeProvider.removeWorktree(args.worktree.path, false)
     )
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(WorktreeCommands.RemoveForced, (args) =>
-      worktreeProvider.forceRemove(args)
+    vscode.commands.registerCommand(
+      WorktreeCommands.RemoveForced,
+      (args: WorktreeTreeItem) =>
+        worktreeProvider.forceRemove(args.worktree.path)
     )
   );
 }
