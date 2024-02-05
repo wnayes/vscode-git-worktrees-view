@@ -1,4 +1,5 @@
 import * as childProcess from "child_process";
+import * as vscode from "vscode";
 
 /** Executes a shell command. */
 export function exec(cmd: string): Promise<string> {
@@ -11,4 +12,18 @@ export function exec(cmd: string): Promise<string> {
       resolve(out);
     });
   });
+}
+
+export function execShellCommandAsTask(cmd: string, name: string): void {
+  const taskDefinition: vscode.TaskDefinition = {
+    type: "git",
+  };
+  const task = new vscode.Task(
+    taskDefinition,
+    vscode.TaskScope.Workspace,
+    name,
+    "git-worktrees-view",
+    new vscode.ShellExecution(cmd)
+  );
+  vscode.tasks.executeTask(task);
 }

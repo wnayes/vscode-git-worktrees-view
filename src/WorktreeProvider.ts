@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { minimatch } from "minimatch";
 import { WorktreeTreeItem } from "./WorktreeTreeItem";
-import { exec } from "./exec";
+import { exec, execShellCommandAsTask } from "./exec";
 import { parseWorktreePorcelain } from "./Worktrees";
 import { WorktreeCommands } from "./WorktreeCommands";
 import { getWorkspaceDirectory } from "./utils";
@@ -37,11 +37,10 @@ export class WorktreeProvider
   }
 
   async removeWorktree(path: string, force: boolean) {
-    await exec(
-      `git -C "${getWorkspaceDirectory()}" worktree remove${
-        force ? " -f" : ""
-      } "${path}"`
-    );
+    const removeCommand = `git -C "${getWorkspaceDirectory()}" worktree remove${
+      force ? " -f" : ""
+    } "${path}"`;
+    execShellCommandAsTask(removeCommand, "Remove Worktree");
   }
 
   getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
