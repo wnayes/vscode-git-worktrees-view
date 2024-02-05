@@ -12,7 +12,14 @@ export class WorktreeTreeItem extends vscode.TreeItem {
     super(getBranchNameForDisplay(worktree.branch), collapsibleState);
     this.worktree = worktree;
     this.description = worktree.path;
-    this.tooltip = "Click to open worktree in current window";
+    this.tooltip = new vscode.MarkdownString(
+      `$(git-branch) ${worktree.branch}
+
+${worktree.path}
+
+Click to open worktree in current window`,
+      true
+    );
     this.command = command;
 
     const currentPath = getWorkspaceDirectory() ?? "";
