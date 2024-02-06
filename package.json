@@ -51,6 +51,11 @@
         "group": "git-worktrees-view.open@2"
       },
       {
+        "command": "git-worktrees-view.openWorktreeFileExplorer",
+        "title": "Open in File Explorer",
+        "group": "git-worktrees-view.open@3"
+      },
+      {
         "command": "git-worktrees-view.refresh",
         "title": "Refresh",
         "icon": "$(refresh)"
@@ -97,6 +102,10 @@
           "when": "view == git-worktrees-view && viewItem == other-worktree"
         },
         {
+          "command": "git-worktrees-view.openWorktreeFileExplorer",
+          "when": "view == git-worktrees-view && viewItem == other-worktree"
+        },
+        {
           "command": "git-worktrees-view.removeWorktree",
           "when": "view == git-worktrees-view && viewItem == other-worktree"
         },
@@ -112,6 +121,10 @@
         },
         {
           "command": "git-worktrees-view.openWorktreeNewWindow",
+          "when": "false"
+        },
+        {
+          "command": "git-worktrees-view.openWorktreeFileExplorer",
           "when": "false"
         },
         {

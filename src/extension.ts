@@ -3,6 +3,7 @@ import { API as GitAPI, GitExtension } from "./git.d";
 import { WorktreeProvider } from "./WorktreeProvider";
 import { WorktreeCommands } from "./WorktreeCommands";
 import { WorktreeTreeItem } from "./WorktreeTreeItem";
+import { revealFile } from "./exec";
 
 export function activate(context: vscode.ExtensionContext) {
   const worktreeProvider = new WorktreeProvider();
@@ -31,6 +32,19 @@ export function activate(context: vscode.ExtensionContext) {
         if (path) {
           const uri = vscode.Uri.file(path);
           await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+        }
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      WorktreeCommands.OpenFileExplorer,
+      async (args: WorktreeTreeItem) => {
+        const path = args.worktree.path;
+        if (path) {
+          const uri = vscode.Uri.file(path);
+          await revealFile(uri);
         }
       }
     )

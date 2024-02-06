@@ -27,3 +27,13 @@ export function execShellCommandAsTask(cmd: string, name: string): void {
   );
   vscode.tasks.executeTask(task);
 }
+
+export async function revealFile(uri: vscode.Uri): Promise<boolean> {
+  try {
+    await vscode.commands.executeCommand("revealFileInOS", uri);
+    return true;
+  } catch {
+    vscode.window.showWarningMessage("Failed to open path " + uri.path);
+    return false;
+  }
+}
