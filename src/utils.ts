@@ -9,8 +9,12 @@ export function getWorkspaceDirectory(): string | undefined {
 
 export function getResolvedPath(path: string): string {
   try {
-    return realpathSync(resolve(path));
-  } catch {
-    return path;
-  }
+    path = realpathSync(resolve(path));
+
+    // Sometimes the drive letter gets lowercased on Windows.
+    if (path && path[0]) {
+      path = path[0].toUpperCase() + path.substring(1);
+    }
+  } catch {}
+  return path;
 }
