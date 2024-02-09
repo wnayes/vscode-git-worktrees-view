@@ -11,20 +11,21 @@ export class WorktreeTreeItem extends vscode.TreeItem {
   ) {
     super(getBranchNameForDisplay(worktree.branch), collapsibleState);
     this.worktree = worktree;
-    this.description = worktree.path;
+    const resolvedWorktreePath = getResolvedPath(worktree.path);
+    this.description = resolvedWorktreePath;
     this.command = command;
     this.tooltip = new vscode.MarkdownString("", true);
     if (worktree.branch) {
       this.tooltip.appendMarkdown(`$(git-branch) ${worktree.branch}\n\n`);
     }
-    if (worktree.path) {
-      this.tooltip.appendText(`${worktree.path}\n\n`);
+    if (resolvedWorktreePath) {
+      this.tooltip.appendText(`${resolvedWorktreePath}\n\n`);
     }
     this.tooltip.appendText("Click to open worktree in current window");
 
     const currentPath = getWorkspaceDirectory() ?? "";
     const isWorkspaceWorktree =
-      getResolvedPath(this.worktree.path) === getResolvedPath(currentPath);
+      resolvedWorktreePath === getResolvedPath(currentPath);
     if (isWorkspaceWorktree) {
       this.contextValue = "current-worktree";
       this.iconPath = new vscode.ThemeIcon("check");
