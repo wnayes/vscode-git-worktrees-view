@@ -4,6 +4,7 @@ import { WorktreeProvider } from "./WorktreeProvider";
 import { WorktreeCommands } from "./WorktreeCommands";
 import { WorktreeTreeItem } from "./WorktreeTreeItem";
 import { revealFile } from "./exec";
+import { getResolvedPath } from "./utils";
 
 export function activate(context: vscode.ExtensionContext) {
   const worktreeProvider = new WorktreeProvider();
@@ -60,7 +61,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       WorktreeCommands.Remove,
       (args: WorktreeTreeItem) =>
-        worktreeProvider.removeWorktree(args.worktree.path, false)
+        worktreeProvider.removeWorktree(
+          getResolvedPath(args.worktree.path),
+          false
+        )
     )
   );
 
@@ -68,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       WorktreeCommands.RemoveForced,
       (args: WorktreeTreeItem) =>
-        worktreeProvider.forceRemove(args.worktree.path)
+        worktreeProvider.forceRemove(getResolvedPath(args.worktree.path))
     )
   );
 }
