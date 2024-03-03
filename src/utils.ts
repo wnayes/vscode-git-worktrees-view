@@ -18,3 +18,9 @@ export function getResolvedPath(path: string): string {
   } catch {}
   return path;
 }
+
+/** Formats a path string for use as a glob pattern. */
+export function formatPathForGlob(path: string): string {
+  // Ensure all slashes are forward.
+  return path.replace(/\\/g, "/");
+}
