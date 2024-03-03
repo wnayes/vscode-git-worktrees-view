@@ -3,6 +3,7 @@ export interface IWorktree {
   path: string;
   branch: string;
   head: string;
+  description?: string;
   bare?: boolean;
   detached?: boolean;
   prunable?: string | true;

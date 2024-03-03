@@ -144,6 +144,11 @@
     "configuration": {
       "title": "Git Worktrees View",
       "properties": {
+        "git-worktrees-view.branchDescriptionExecutable": {
+          "title": "Branch Description Executable",
+          "description": "A program/script that returns a description string when passed the name of a branch. Can be used to add description values into the tooltip for each worktree.",
+          "type": "string"
+        },
         "git-worktrees-view.ignoreBranches": {
           "title": "Ignore By Branch",
           "markdownDescription": "Branch name patterns for worktrees to ignore when building the view.\nExample: `**/main` to hide the `main` branch.",

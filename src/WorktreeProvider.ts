@@ -70,6 +70,7 @@ async function getWorktreeTreeItems(
 
   const { ignorePaths, ignoreBranches, pathNodeParentMap } =
     getPathsConfiguration();
+  const descriptionExecutable = getDescriptionExecutable();
 
   const treeItems: vscode.TreeItem[] = [];
   const nodeMap = new Map<string, GroupTreeItem>();
@@ -92,6 +93,12 @@ async function getWorktreeTreeItems(
     }
     if (skip) {
       continue;
+    }
+
+    if (descriptionExecutable) {
+      worktree.description = await exec(
+        `${descriptionExecutable} ${worktree.branch}`
+      );
     }
 
     const openCommand: vscode.Command = {
@@ -148,4 +155,9 @@ function getPathsConfiguration() {
     pathNodeParentMap = pathNodeParentMapRaw;
   }
   return { ignorePaths, ignoreBranches, pathNodeParentMap };
+}
+
+function getDescriptionExecutable(): string | undefined {
+  const settings = vscode.workspace.getConfiguration(ConfigSectionName);
+  return settings.get(Settings.BranchDescriptionExecutable);
 }

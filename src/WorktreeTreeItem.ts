@@ -18,6 +18,9 @@ export class WorktreeTreeItem extends vscode.TreeItem {
     if (worktree.branch) {
       this.tooltip.appendMarkdown(`$(git-branch) ${worktree.branch}\n\n`);
     }
+    if (worktree.description) {
+      this.tooltip.appendText(`${worktree.description}\n\n`);
+    }
     if (resolvedWorktreePath) {
       this.tooltip.appendText(`${resolvedWorktreePath}\n\n`);
     }

@@ -9,6 +9,8 @@ Switch between Git worktrees in Visual Studio Code.
 - Remove worktrees (forced / unforced)
 - Filtering out worktrees by path or branch.
 - Grouping worktrees based on path.
+- Refreshes automatically when worktrees change.
+- Configurable custom description in worktree tooltip.
 
 ## License
 
