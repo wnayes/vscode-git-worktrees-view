@@ -4,6 +4,9 @@ import { getResolvedPath, getWorkspaceDirectory } from "./utils";
 
 /** Represents an individual item in the Worktrees view. */
 export class WorktreeTreeItem extends vscode.TreeItem {
+  public worktree: IWorktree;
+  private _resolvedWorktreePath: string;
+
   constructor(
     worktree: IWorktree,
     collapsibleState: vscode.TreeItemCollapsibleState,
@@ -11,24 +14,14 @@ export class WorktreeTreeItem extends vscode.TreeItem {
   ) {
     super(getBranchNameForDisplay(worktree.branch), collapsibleState);
     this.worktree = worktree;
-    const resolvedWorktreePath = getResolvedPath(worktree.path);
-    this.description = resolvedWorktreePath;
+    this._resolvedWorktreePath = getResolvedPath(worktree.path);
+    this.description = this._resolvedWorktreePath;
     this.command = command;
-    this.tooltip = new vscode.MarkdownString("", true);
-    if (worktree.branch) {
-      this.tooltip.appendMarkdown(`$(git-branch) ${worktree.branch}\n\n`);
-    }
-    if (worktree.description) {
-      this.tooltip.appendText(`${worktree.description}\n\n`);
-    }
-    if (resolvedWorktreePath) {
-      this.tooltip.appendText(`${resolvedWorktreePath}\n\n`);
-    }
-    this.tooltip.appendText("Click to open worktree in current window");
+    this.rebuildTooltip();
 
     const currentPath = getWorkspaceDirectory() ?? "";
     const isWorkspaceWorktree =
-      resolvedWorktreePath === getResolvedPath(currentPath);
+      this._resolvedWorktreePath === getResolvedPath(currentPath);
     if (isWorkspaceWorktree) {
       this.contextValue = "current-worktree";
       this.iconPath = new vscode.ThemeIcon("check");
@@ -42,7 +35,19 @@ export class WorktreeTreeItem extends vscode.TreeItem {
     }
   }
 
-  public worktree: IWorktree;
+  rebuildTooltip(): void {
+    this.tooltip = new vscode.MarkdownString("", true);
+    if (this.worktree.branch) {
+      this.tooltip.appendMarkdown(`$(git-branch) ${this.worktree.branch}\n\n`);
+    }
+    if (this.worktree.description) {
+      this.tooltip.appendText(`${this.worktree.description}\n\n`);
+    }
+    if (this._resolvedWorktreePath) {
+      this.tooltip.appendText(`${this._resolvedWorktreePath}\n\n`);
+    }
+    this.tooltip.appendText("Click to open worktree in current window");
+  }
 }
 
 function getBranchNameForDisplay(branch: string): string {

@@ -18,8 +18,8 @@ export class WorktreeProvider
     WorktreeTreeItem | undefined | void
   > = this._onDidChangeTreeData.event;
 
-  refresh(): void {
-    this._onDidChangeTreeData.fire();
+  refresh(treeItem?: WorktreeTreeItem): void {
+    this._onDidChangeTreeData.fire(treeItem);
   }
 
   async forceRemove(path: string) {
@@ -54,87 +54,89 @@ export class WorktreeProvider
 
     const workspaceRoot = getWorkspaceDirectory();
     if (workspaceRoot) {
-      return Promise.resolve(getWorktreeTreeItems(workspaceRoot));
+      return Promise.resolve(this._getWorktreeTreeItems(workspaceRoot));
     }
     return Promise.resolve([]);
   }
-}
 
-async function getWorktreeTreeItems(
-  workingPath: string
-): Promise<vscode.TreeItem[]> {
-  const worktreeOutput = await exec(
-    `git -C "${workingPath}" worktree list --porcelain -z`
-  );
-  const worktrees = parseWorktreePorcelain(worktreeOutput);
-
-  const { ignorePaths, ignoreBranches, pathNodeParentMap } =
-    getPathsConfiguration();
-  const descriptionExecutable = getDescriptionExecutable();
-
-  const treeItems: vscode.TreeItem[] = [];
-  const nodeMap = new Map<string, GroupTreeItem>();
-  for (const worktree of worktrees) {
-    if (worktree.bare) {
-      continue;
-    }
-    let skip = false;
-    for (const ignorePath of ignorePaths) {
-      if (worktree.path && minimatch(worktree.path, ignorePath)) {
-        skip = true;
-        break;
-      }
-    }
-    for (const ignoreBranch of ignoreBranches) {
-      if (worktree.branch && minimatch(worktree.branch, ignoreBranch)) {
-        skip = true;
-        break;
-      }
-    }
-    if (skip) {
-      continue;
-    }
-
-    if (descriptionExecutable) {
-      worktree.description = await exec(
-        `${descriptionExecutable} ${worktree.branch}`
-      );
-    }
-
-    const openCommand: vscode.Command = {
-      title: "open",
-      command: WorktreeCommands.Open,
-      arguments: [worktree.path],
-    };
-    const worktreeTreeItem = new WorktreeTreeItem(
-      worktree,
-      vscode.TreeItemCollapsibleState.None,
-      openCommand
+  private async _getWorktreeTreeItems(
+    workingPath: string
+  ): Promise<vscode.TreeItem[]> {
+    const worktreeOutput = await exec(
+      `git -C "${workingPath}" worktree list --porcelain -z`
     );
+    const worktrees = parseWorktreePorcelain(worktreeOutput);
 
-    let foundParent = false;
-    for (const mapping of pathNodeParentMap) {
-      if (worktree.path && minimatch(worktree.path, mapping.pathPattern)) {
-        let parentNode = nodeMap.get(mapping.parent);
-        if (!parentNode) {
-          parentNode = new GroupTreeItem(mapping.parent);
-          nodeMap.set(mapping.parent, parentNode);
-          treeItems.push(parentNode);
+    const { ignorePaths, ignoreBranches, pathNodeParentMap } =
+      getPathsConfiguration();
+    const descriptionExecutable = getDescriptionExecutable();
+
+    const treeItems: vscode.TreeItem[] = [];
+    const nodeMap = new Map<string, GroupTreeItem>();
+    for (const worktree of worktrees) {
+      if (worktree.bare) {
+        continue;
+      }
+      let skip = false;
+      for (const ignorePath of ignorePaths) {
+        if (worktree.path && minimatch(worktree.path, ignorePath)) {
+          skip = true;
+          break;
         }
-        parentNode.childNodes.push(worktreeTreeItem);
-        foundParent = true;
+      }
+      for (const ignoreBranch of ignoreBranches) {
+        if (worktree.branch && minimatch(worktree.branch, ignoreBranch)) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) {
+        continue;
+      }
+
+      const openCommand: vscode.Command = {
+        title: "open",
+        command: WorktreeCommands.Open,
+        arguments: [worktree.path],
+      };
+      const worktreeTreeItem = new WorktreeTreeItem(
+        worktree,
+        vscode.TreeItemCollapsibleState.None,
+        openCommand
+      );
+
+      if (descriptionExecutable) {
+        exec(`${descriptionExecutable} ${worktree.branch}`).then((output) => {
+          worktree.description = output;
+          worktreeTreeItem.rebuildTooltip();
+          this.refresh(worktreeTreeItem);
+        });
+      }
+
+      let foundParent = false;
+      for (const mapping of pathNodeParentMap) {
+        if (worktree.path && minimatch(worktree.path, mapping.pathPattern)) {
+          let parentNode = nodeMap.get(mapping.parent);
+          if (!parentNode) {
+            parentNode = new GroupTreeItem(mapping.parent);
+            nodeMap.set(mapping.parent, parentNode);
+            treeItems.push(parentNode);
+          }
+          parentNode.childNodes.push(worktreeTreeItem);
+          foundParent = true;
+        }
+      }
+
+      if (!foundParent) {
+        treeItems.push(worktreeTreeItem);
       }
     }
-
-    if (!foundParent) {
-      treeItems.push(worktreeTreeItem);
-    }
+    return treeItems.sort((a, b) => {
+      if (a.label! < b.label!) return -1;
+      if (a.label! > b.label!) return 1;
+      return 0;
+    });
   }
-  return treeItems.sort((a, b) => {
-    if (a.label! < b.label!) return -1;
-    if (a.label! > b.label!) return 1;
-    return 0;
-  });
 }
 
 function getPathsConfiguration() {
