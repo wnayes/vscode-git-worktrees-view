@@ -73,6 +73,8 @@ export class WorktreeProvider
 
     const treeItems: vscode.TreeItem[] = [];
     const nodeMap = new Map<string, GroupTreeItem>();
+    const descriptionPromises: Promise<void>[] = [];
+    const nodesToRefresh: WorktreeTreeItem[] = [];
     for (const worktree of worktrees) {
       if (worktree.bare) {
         continue;
@@ -106,11 +108,13 @@ export class WorktreeProvider
       );
 
       if (descriptionExecutable) {
-        exec(`${descriptionExecutable} ${worktree.branch}`).then((output) => {
-          worktree.description = output;
-          worktreeTreeItem.rebuildTooltip();
-          this.refresh(worktreeTreeItem);
-        });
+        descriptionPromises.push(
+          exec(`${descriptionExecutable} ${worktree.branch}`).then((output) => {
+            worktree.description = output;
+            worktreeTreeItem.rebuildTooltip();
+            nodesToRefresh.push(worktreeTreeItem);
+          })
+        );
       }
 
       let foundParent = false;
@@ -131,6 +135,13 @@ export class WorktreeProvider
         treeItems.push(worktreeTreeItem);
       }
     }
+
+    // Try to minimize the refreshing, because it seems to cause UI jank.
+    // Wait until we get all descriptions, then refresh.
+    Promise.all(descriptionPromises).then(() => {
+      nodesToRefresh.forEach((treeItem) => this.refresh(treeItem));
+    });
+
     return treeItems.sort((a, b) => {
       if (a.label! < b.label!) return -1;
       if (a.label! > b.label!) return 1;
